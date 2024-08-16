@@ -1,6 +1,6 @@
 #%% Packages
 import torch
-from torch import nn, optim
+from torch import nn
 from torch.utils.data import Dataset, DataLoader
 
 import numpy as np
@@ -10,13 +10,16 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# %% Packages
+import seaborn as sns
+
 # %% Data Import
 data = sns.load_dataset("flights")
 print(f'Number of Entries: {len(data)}')
 data.head()
 
 # %%
-sns.lineplot(data.index, data.passengers, data=data)
+# sns.lineplot(data.index, data.passengers, data=data)
 # %%
 # Convert passenter data to float32 for PyTorch
 num_points = len(data)

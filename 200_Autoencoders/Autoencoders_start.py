@@ -25,16 +25,57 @@ dataloader = DataLoader(dataset, batch_size=8, shuffle=True)
 LATENT_DIMS = 128
 
 # TODO: Implement Encoder class
+class Encoder(nn.Module):
+    def __init__(self) -> None:
+        super().__init__() 
+        self.conv1 = nn.Conv2d(1, 6, 3)  # out: 6, 62, 62
+        self.conv2 = nn.Conv2d(6, 16, 3) # out: 16, 60, 60
+        self.relu = nn.ReLU()
+        self.flatten = nn.Flatten() # out: 16*60*60 = 57600
+        self.fc = nn.Linear(16*60*60, LATENT_DIMS)
 
-# TODO: Implement Decoder class
+    
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.flatten(x)
+        x = self.fc(x)
+        return x
 
-# TODO: Implement Autoencoder class
+class Decoder(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.fc = nn.Linear(LATENT_DIMS, 16*60*60)
+        self.conv2 = nn.ConvTranspose2d(16, 6, 3)
+        self.conv1 = nn.ConvTranspose2d(6, 1, 3)
+        self.relu = nn.ReLU()
+    
+    def forward(self, x):
+        x = self.fc(x)
+        x = x.view(-1, 16, 60, 60)  # infer first dim from other dims
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.conv1(x)
+        x = self.relu(x)
+        return x
 
+class Autoencoder(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.encoder = Encoder()
+        self.decoder = Decoder()
+    
+    def forward(self, x):
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
 
 # Test it
-# input = torch.rand((1, 1, 64, 64))
-# model = Autoencoder()
-# model(input).shape
+input = torch.rand((1, 1, 64, 64))
+model = Autoencoder()
+model(input).shape
 
 
 #%% init model, loss function, optimizer

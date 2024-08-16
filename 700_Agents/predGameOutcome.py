@@ -21,7 +21,7 @@ MODEL = "mixtral-8x7b-32768"
 #%% define other LLM
 llm=ChatGroq(temperature=0,
              model_name=MODEL,
-             api_key=os.environ["GROQ_API"])
+             api_key=os.environ.get("GROQ_API_KEY"))
 
 # %% Agents
 match_researcher = Agent(
@@ -81,7 +81,7 @@ predict_match_outcome = Task(
 crew = Crew(
     agents=[match_researcher, match_predictor],
     tasks=[analyze_matches, predict_match_outcome],
-    verbose=2
+    verbose=True
 )
 
 result = crew.kickoff(inputs={"country1": "Germany", "country2": "Scotland"})

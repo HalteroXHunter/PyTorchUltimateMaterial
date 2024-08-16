@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 import torch.nn as nn 
 import seaborn as sns
+from torch.utils.data import Dataset, DataLoader
 
 #%% data import
 cars_file = 'https://gist.githubusercontent.com/noamross/e5d3e859aa0c794be10b/raw/b999fb4425b54c63cab088c0ce2c0d6ce961a563/cars.csv'
@@ -22,6 +23,21 @@ y_list = cars.mpg.values
 y_np = np.array(y_list, dtype=np.float32).reshape(-1,1)
 X = torch.from_numpy(X_np)
 y_true = torch.from_numpy(y_np)
+
+#%% create dataset and dataloader
+class linearRegressionDataset(Dataset):
+    def __init__(self, X, y):
+        self.X = X
+        self.y = y
+    
+    def __len__(self):
+        return len(self.X)
+    
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
+    
+dataset = linearRegressionDataset(X_np, y_np)
+train_loader = DataLoader(dataset, batch_size=2, shuffle=True)
 
 #%%
 class LinearRegressionTorch(nn.Module):
@@ -46,21 +62,28 @@ learning_rate = 0.02
 # best 0.02
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
+#%% check trainloader returns
+
+for i, (X, y) in enumerate(train_loader):
+    print(f"{i}th batch")
+    print(X)
+    print(y)
+
 #%% perform training
 losses = []
 slope, bias = [], []
 NUM_EPOCHS = 1000
 BATCH_SIZE = 2
 for epoch in range(NUM_EPOCHS):
-    for i in range(0, X.shape[0], BATCH_SIZE):
+    for i, (X,y) in enumerate(train_loader):
         # optimization
         optimizer.zero_grad()
 
         # forward pass
-        y_pred = model(X[i:i+BATCH_SIZE])
+        y_pred = model(X)
 
         # compute loss
-        loss = loss_fun(y_pred, y_true[i:i+BATCH_SIZE])
+        loss = loss_fun(y_pred, y)
         losses.append(loss.item())
 
         # backprop

@@ -51,10 +51,23 @@ sns.lineplot(x=range(len(y_train)), y=y_train, label = 'Train Data')
 # %% Model
 # TODO: implement model class
 class TrigonometryModel(nn.Module):
-    pass
+    def __init__(self, input_size=1, output_size=1):
+        super(TrigonometryModel, self).__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size=5, num_layers=1, batch_first=True)
+        self.fc = nn.Linear(in_features=5, out_features=output_size)
+        self.relu = nn.ReLU()
+        
+    def forward(self, x):
+        x, _ = self.lstm(x) # output is: BS, seq_len, hidden_size
+        x = x[:,-1,:] # output is: BS, hidden_size
+        x = self.fc(x)
+        x = self.relu(x)
+        return x
 
 #%% instantiate model, optimizer, and loss
 model = TrigonometryModel()
+# input = torch.rand((2,10,1))
+# model(input).shape
 
 #%% Loss and Optimizer
 loss_fun = nn.MSELoss()
@@ -65,10 +78,8 @@ NUM_EPOCHS = 20
 for epoch in range(NUM_EPOCHS):
     for j, (X, y) in enumerate(train_loader):
         optimizer.zero_grad()
-        # TODO: implement forward pass
-        
-        # TODO: implement loss calc
-        
+        y_pred = model(X.view(-1, 10, 1))
+        loss = loss_fun(y_pred, y.unsqueeze(1))
         loss.backward()
         optimizer.step()
     if epoch % 50 == 0:

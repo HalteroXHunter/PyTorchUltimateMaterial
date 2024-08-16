@@ -103,3 +103,7 @@ print(f"Naive classifier: {most_common_cnt/len(y_test_str) * 100}%")
 # %% Test accuracy
 test_acc = accuracy_score(y_test, y_test_hat)
 print(f"Test accuracy: {test_acc * 100}%")
+
+# %% save the model state dict
+torch.save(model.state_dict(), "model_iris.pt")
+# %%

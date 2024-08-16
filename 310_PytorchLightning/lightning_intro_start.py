@@ -41,4 +41,41 @@ train_loader = DataLoader(dataset = LinearRegressionDataset(X_np, y_np), batch_s
 
 
 
-#%%
+#%% build model
+class LitLinearRegression(pl.LightningModule):
+    def __init__(self, input_size, output_size):
+        super().__init__()
+        self.linear = nn.Linear(input_size,output_size)
+        self.loss_func = nn.MSELoss()
+    
+    def forward(self, x):
+        return self.linear(x)
+    
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=0.02)
+    
+    def training_step(self, batch):
+        X, y = batch
+
+        # forward pass
+        y_hat = self(X)
+        loss = self.loss_func(y_hat, y)
+        self.log('train_loss', loss, prog_bar=True)
+        return loss
+    
+#%% train model
+early_stop_callback = EarlyStopping(monitor='train_loss', min_delta=0.00, patience=5, verbose=True, mode='min')
+
+
+model = LitLinearRegression(1,1)
+trainer = pl.Trainer(accelerator='gpu',devices=1, max_epochs=500, log_every_n_steps=2, callbacks=[early_stop_callback])
+trainer.fit(model, train_loader)
+
+#%% 
+trainer.current_epoch
+    
+# %%
+for parameter in model.parameters():
+    print(parameter)
+
+# %%
